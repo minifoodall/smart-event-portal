@@ -15,13 +15,13 @@ This file documents the three image versions required by the project (Phase 2 Ta
 - **Visible change:** Theme toggle button in the navbar; dark color scheme persisted in `localStorage`
 - Why: improves UX and demonstrates a UI-only feature that ships independently (no DB migration, no API change)
 - Files: `frontend/src/context/ThemeContext.jsx`, `frontend/src/components/ThemeToggle.jsx`, `frontend/src/styles/global.css`
-- Image tags: `gunjk/eventportal-frontend:v2`, `gunjk/eventportal-backend:v2` (no backend change — same image re-tagged)
+- Image tags: `gunjkushwaha/eventportal-frontend:v2`, `gunjkushwaha/eventportal-backend:v2` (no backend change — same image re-tagged)
 
 ## v3.0.0 — Event Search & Filter (`v3`)
 - **Visible change:** search box + category filter on the Home page; "no results" empty state
 - Why: showcases backend search indexing (MongoDB text index) and demonstrates a feature spanning both tiers
 - Files: `frontend/src/pages/Home.jsx`, `backend/src/models/Event.js` (text index), `backend/src/routes/event.routes.js` (`$text` filter)
-- Image tags: `gunjk/eventportal-frontend:v3`, `gunjk/eventportal-backend:v3`
+- Image tags: `gunjkushwaha/eventportal-frontend:v3`, `gunjkushwaha/eventportal-backend:v3`
 
 ## Rollback procedure
 ```bash

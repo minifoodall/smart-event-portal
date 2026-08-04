@@ -21,7 +21,7 @@ kubectl -n event-portal scale deployment/backend --replicas=5
 kubectl -n event-portal get pods -l app=backend
 
 # 6. Rolling update (Phase 3 Task 5) — push v2 image first
-kubectl -n event-portal set image deployment/backend backend=gunjk/eventportal-backend:v2 --record
+kubectl -n event-portal set image deployment/backend backend=gunjkushwaha/eventportal-backend:v2 --record
 kubectl -n event-portal rollout status deployment/backend
 kubectl -n event-portal rollout history deployment/backend
 

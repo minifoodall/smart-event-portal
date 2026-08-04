@@ -4,7 +4,7 @@ In Jenkins → Manage Jenkins → Credentials, create the following **Store scop
 
 | ID                     | Kind              | Notes                                                                 |
 |------------------------|-------------------|-----------------------------------------------------------------------|
-| `dockerhub-creds`      | Username/Password | Docker Hub account — must have permission to push to `gunjk/*`       |
+| `dockerhub-creds`      | Username/Password | Docker Hub account — must have permission to push to `gunjkushwaha/*`       |
 | `kubeconfig-creds`     | Secret file       | A kubeconfig whose current context points at the demo cluster         |
 | `slack-webhook`        | Secret text       | Incoming-webhook URL for the team channel (optional)                  |
 | `github-token`         | Secret text       | Personal access token with `repo` scope for GitHub webhooks (Phase 1) |

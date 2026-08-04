@@ -5,11 +5,11 @@ replicaCount:
 
 image:
   backend:
-    repository: gunjk/eventportal-backend
+    repository: gunjkushwaha/eventportal-backend
     tag: v1
     pullPolicy: IfNotPresent
   frontend:
-    repository: gunjk/eventportal-frontend
+    repository: gunjkushwaha/eventportal-frontend
     tag: v1
     pullPolicy: IfNotPresent
 

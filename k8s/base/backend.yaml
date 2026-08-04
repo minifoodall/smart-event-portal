@@ -26,7 +26,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: gunjk/eventportal-backend:v1
+          image: gunjkushwaha/eventportal-backend:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000

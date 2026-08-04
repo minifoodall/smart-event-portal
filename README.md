@@ -119,11 +119,11 @@ docker exec -it eventportal-backend sh
 # v2 — adds Dark Mode (frontend)
 # v3 — adds Event Search/Filter (frontend) + Search index (backend)
 
-docker tag eventportal-backend:v1  gunjk/eventportal-backend:v1
-docker tag eventportal-frontend:v1 gunjk/eventportal-frontend:v1
+docker tag eventportal-backend:v1  gunjkushwaha/eventportal-backend:v1
+docker tag eventportal-frontend:v1 gunjkushwaha/eventportal-frontend:v1
 docker login
-docker push gunjk/eventportal-backend:v1
-docker push gunjk/eventportal-frontend:v1
+docker push gunjkushwaha/eventportal-backend:v1
+docker push gunjkushwaha/eventportal-frontend:v1
 ```
 
 ---
@@ -137,7 +137,7 @@ kubectl apply -f k8s/base/
 kubectl -n event-portal scale deployment/backend --replicas=5
 
 # Rolling update
-kubectl -n event-portal set image deployment/backend backend=gunjk/eventportal-backend:v2 --record
+kubectl -n event-portal set image deployment/backend backend=gunjkushwaha/eventportal-backend:v2 --record
 kubectl -n event-portal rollout status deployment/backend
 
 # Rollback
@@ -198,7 +198,7 @@ Before pushing to your own Docker Hub / cluster, replace these placeholders:
 |-------------------------|----------------------------------------|
 | `gunjk`                 | `Jenkinsfile`, `docker-compose.yml`, all `k8s/` manifests |
 | `change-me-in-production-please-rotate` | `k8s/base/secrets.yaml`     |
-| `https://github.com/gunjk/smart-event-portal.git` | `k8s/argocd/application.yaml` |
+| `https://github.com/minifoodall/smart-event-portal.git` | `k8s/argocd/application.yaml` |
 
 ---
 

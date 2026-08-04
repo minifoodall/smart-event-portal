@@ -27,10 +27,10 @@ docker exec -it eventportal-backend sh
 
 # Task 6: Push to Docker Hub
 docker login
-docker tag eventportal-backend:v1  gunjk/eventportal-backend:v1
-docker tag eventportal-frontend:v1 gunjk/eventportal-frontend:v1
-docker push gunjk/eventportal-backend:v1
-docker push gunjk/eventportal-frontend:v1
+docker tag eventportal-backend:v1  gunjkushwaha/eventportal-backend:v1
+docker tag eventportal-frontend:v1 gunjkushwaha/eventportal-frontend:v1
+docker push gunjkushwaha/eventportal-backend:v1
+docker push gunjkushwaha/eventportal-frontend:v1
 
 # Task 7: Docker command reference (used in the demo)
 docker images
