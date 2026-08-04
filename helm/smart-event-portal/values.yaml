@@ -1,0 +1,51 @@
+# Default values — override per environment with --set or -f values-prod.yaml
+replicaCount:
+  backend: 2
+  frontend: 2
+
+image:
+  backend:
+    repository: gunjk/eventportal-backend
+    tag: v1
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: gunjk/eventportal-frontend
+    tag: v1
+    pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: eventportal.local
+      paths:
+        - path: /
+          pathType: Prefix
+        - path: /api
+          pathType: Prefix
+
+mongo:
+  enabled: true
+  image: mongo:7
+  storage: 5Gi
+
+config:
+  corsOrigin: "*"
+  nodeEnv: production
+  mongoUri: "mongodb://mongo:27017/smart_event_portal"
+
+secrets:
+  jwtSecret: "change-me-in-production"
+
+resources:
+  backend:
+    requests: { cpu: "100m", memory: "128Mi" }
+    limits:   { cpu: "500m", memory: "512Mi" }
+  frontend:
+    requests: { cpu: "50m", memory: "32Mi" }
+    limits:   { cpu: "200m", memory: "128Mi" }

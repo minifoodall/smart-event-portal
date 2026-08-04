@@ -1,0 +1,39 @@
+# Canary Deployment labeled version=canary; scaling kept small
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-canary
+  namespace: event-portal
+  labels:
+    app: backend
+    version: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: canary
+    spec:
+      containers:
+        - name: backend
+          image: gunjk/eventportal-backend:canary
+          ports: [{ containerPort: 5000 }]
+          envFrom:
+            - configMapRef: { name: event-portal-config }
+            - secretRef:    { name: event-portal-secrets }
+          readinessProbe:
+            httpGet: { path: /api/ready, port: 5000 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/health, port: 5000 }
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }

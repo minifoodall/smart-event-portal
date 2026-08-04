@@ -1,0 +1,21 @@
+# Argo CD Application — pulls manifests from GitHub and reconciles to the cluster
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: smart-event-portal
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gunjk/smart-event-portal.git
+    targetRevision: HEAD
+    path: k8s/overlays
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: event-portal
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

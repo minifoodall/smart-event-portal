@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-portal-config
+  namespace: event-portal
+data:
+  NODE_ENV: "production"
+  CORS_ORIGIN: "*"
+  MONGO_URI: "mongodb://mongo:27017/smart_event_portal"
+  VITE_API_URL: "/api"

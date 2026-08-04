@@ -1,0 +1,9 @@
+apiVersion: v2
+name: smart-event-portal
+description: Smart Event Management Portal — full-stack Helm chart
+type: application
+version: 1.0.0
+appVersion: "v1"
+keywords: [devops, ci-cd, react, node, mongodb]
+maintainers:
+  - name: ABC Solutions DevOps Team

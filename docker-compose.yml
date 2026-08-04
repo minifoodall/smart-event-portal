@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports: ["27017:27017"]
+  backend:
+    build: ./backend
+    image: gunjk/eventportal-backend:v1
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017/smart_event_portal
+      JWT_SECRET: change-me-in-production
+      CORS_ORIGIN: "*"
+      APP_VERSION: "1.0.0"
+    depends_on: [mongo]
+    ports: ["5000:5000"]
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+        VITE_APP_VERSION: "1.0.0"
+    image: gunjk/eventportal-frontend:v1
+    restart: unless-stopped
+    depends_on: [backend]
+    ports: ["3000:80"]
+volumes:
+  mongo-data: {}

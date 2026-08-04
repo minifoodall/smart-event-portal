@@ -1,0 +1,27 @@
+# Canary split: stable backend gets 90%, canary gets 10% via Istio VirtualService
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backend
+  namespace: event-portal
+spec:
+  hosts: [backend]
+  http:
+    - route:
+        - destination: { host: backend, subset: stable }
+          weight: 90
+        - destination: { host: backend, subset: canary }
+          weight: 10
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backend
+  namespace: event-portal
+spec:
+  host: backend
+  subsets:
+    - name: stable
+      labels: { version: stable }
+    - name: canary
+      labels: { version: canary }

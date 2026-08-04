@@ -1,0 +1,7 @@
+# Alternative declarative-blue-ocean style pipeline (for users who prefer Blue Ocean)
+# Use this instead of the main Jenkinsfile if you want Blue Ocean's visual editor
+kind: Pipeline
+apiVersion: tekton.dev/v1beta1  # placeholder — the file is purely documentation
+metadata:
+  name: smart-event-portal-blueocean
+spec: {}

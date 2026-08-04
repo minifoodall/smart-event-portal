@@ -1,0 +1,14 @@
+{
+  "title": "Smart Event Portal",
+  "uid": "smart-event-portal",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    { "type": "stat", "title": "Replicas (backend)", "targets": [{ "expr": "kube_deployment_status_replicas{deployment='backend',namespace='event-portal'}" }] },
+    { "type": "stat", "title": "Replicas (frontend)", "targets": [{ "expr": "kube_deployment_status_replicas{deployment='frontend',namespace='event-portal'}" }] },
+    { "type": "timeseries", "title": "Pod restarts", "targets": [{ "expr": "increase(kube_pod_container_status_restarts_total{namespace='event-portal'}[5m])" }] },
+    { "type": "timeseries", "title": "5xx rate", "targets": [{ "expr": "sum(rate(nginx_ingress_response_status_total{namespace='event-portal',status=~'5..'}[5m]))" }] }
+  ]
+}
