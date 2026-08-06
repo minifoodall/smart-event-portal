@@ -61,18 +61,24 @@ docker compose up -d --build
 # Mongo    → localhost:27017
 
 # 2. Seed an admin user
+# NOTE: Mongoose's `pre('save')` bcrypt hook does NOT fire on `findOneAndUpdate`,
+# so we must hash the password explicitly.  The same one-liner works for both
+# docker-compose and Kubernetes (replace `docker compose exec backend` with
+# `kubectl -n event-portal exec deploy/backend --`):
 docker compose exec backend node -e "
 require('dotenv').config();
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const User = require('./src/models/User');
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
+  const hash = await bcrypt.hash('admin123', 10);
   await User.findOneAndUpdate(
     { email: 'admin@example.com' },
-    { name: 'Admin', email: 'admin@example.com', password: 'admin123', role: 'admin' },
+    { name: 'Admin', email: 'admin@example.com', password: hash, role: 'admin' },
     { upsert: true, setDefaultsOnInsert: true }
   );
-  console.log('admin@example.com / admin123');
+  console.log('seeded admin@example.com / admin123');
   process.exit(0);
 })();
 "
@@ -188,7 +194,7 @@ See [`docs/architecture.md`](docs/architecture.md) and [`docs/architecture.svg`]
 - [x] Architecture diagram (`docs/architecture.svg`)
 - [x] Innovation report (`docs/innovation-report.md`)
 - [x] Screenshots of each phase (`docs/screenshots/`)
-- [x] Docker Hub repository link (replace `<your-dockerhub-username>`)
+- [x] Docker Hub repository link: https://hub.docker.com/u/gunjkushwaha (`gunjkushwaha/eventportal-backend`, `gunjkushwaha/eventportal-frontend`)
 
 ## 10. Configuration you must change
 
@@ -196,7 +202,7 @@ Before pushing to your own Docker Hub / cluster, replace these placeholders:
 
 | Placeholder             | Where                                  |
 |-------------------------|----------------------------------------|
-| `gunjk`                 | `Jenkinsfile`, `docker-compose.yml`, all `k8s/` manifests |
+| `gunjkushwaha`          | `Jenkinsfile`, `docker-compose.yml`, all `k8s/` manifests, `README.md` |
 | `change-me-in-production-please-rotate` | `k8s/base/secrets.yaml`     |
 | `https://github.com/minifoodall/smart-event-portal.git` | `k8s/argocd/application.yaml` |
 
