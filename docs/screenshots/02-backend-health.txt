@@ -1,0 +1,6 @@
+--- backend health ---
+{"status":"ok","version":"1.0.0","uptime":8910.552941194}
+--- frontend → backend (in-cluster) ---
+{"status":"ok","version":"v1","uptime":4652.6983715}
+--- /api/events ---
+[{"_id":"6a71ed125ac2ff553ec5d7b5","title":"Dance","description":"bsfhusd","location":"Delhi","date":"2026-08-09T19:15:00.000Z","capacity":50,"imageUrl":"","category":"general","createdBy":"6a71b1fb4d87af788a9f0141","createdAt":"2026-08-04T13:45:54.267Z","updatedAt":"2026-08-04T13:45:54.267Z","__v":0}]

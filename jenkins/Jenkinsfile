@@ -40,7 +40,7 @@ pipeline {
           echo "Node: $(node -v || true)"
           echo "NPM:  $(npm -v  || true)"
           echo "Docker: $(docker --version || true)"
-          echo "kubectl: $(kubectl version --client --short 2>/dev/null || true)"
+          echo "kubectl: $(kubectl version --client 2>/dev/null | head -1 || true)"
         '''
       }
     }

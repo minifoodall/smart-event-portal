@@ -1,0 +1,28 @@
+NAME                            READY   STATUS    RESTARTS   AGE   IP          NODE             NOMINATED NODE   READINESS GATES
+pod/backend-f689c59cc-gh47f     1/1     Running   0          13h   10.1.0.26   docker-desktop   <none>           <none>
+pod/backend-f689c59cc-tt2mt     1/1     Running   0          13h   10.1.0.25   docker-desktop   <none>           <none>
+pod/frontend-5744d8c97f-fhvjb   1/1     Running   0          45m   10.1.0.49   docker-desktop   <none>           <none>
+pod/frontend-5744d8c97f-nclpx   1/1     Running   0          45m   10.1.0.48   docker-desktop   <none>           <none>
+pod/mongo-0                     1/1     Running   0          13h   10.1.0.24   docker-desktop   <none>           <none>
+
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE   SELECTOR
+service/backend    ClusterIP   10.108.127.76    <none>        80/TCP      13h   app=backend
+service/frontend   ClusterIP   10.101.48.66     <none>        80/TCP      13h   app=frontend
+service/mongo      ClusterIP   10.109.158.173   <none>        27017/TCP   13h   app=mongo
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                 SELECTOR
+deployment.apps/backend    2/2     2            2           13h   backend      gunjkushwaha/eventportal-backend:v1    app=backend
+deployment.apps/frontend   2/2     2            2           13h   frontend     gunjkushwaha/eventportal-frontend:v4   app=frontend
+
+NAME                     READY   AGE   CONTAINERS   IMAGES
+statefulset.apps/mongo   1/1     13h   mongo        mongo:7
+
+NAME                            DATA   AGE
+configmap/event-portal-config   4      13h
+configmap/kube-root-ca.crt      1      14h
+
+NAME                          TYPE     DATA   AGE
+secret/event-portal-secrets   Opaque   3      14h
+
+NAME                                     CLASS    HOSTS   ADDRESS   PORTS   AGE
+ingress.networking.k8s.io/event-portal   <none>   *                 80      13h
