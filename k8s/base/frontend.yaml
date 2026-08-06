@@ -21,18 +21,23 @@ spec:
         app: frontend
     spec:
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
+        # The nginx:alpine entrypoint writes to /etc/nginx/conf.d/default.conf
+        # as root during the envsubst phase, then execs nginx as the `nginx` user.
+        # Forcing runAsUser/runAsNonRoot=true means the entrypoint can't write
+        # the rendered config and nginx fails to start. Letting the container
+        # run as root (the image's default) and rely on capability drops +
+        # readOnlyRootFilesystem is the right tradeoff for a static-file server.
+        fsGroup: 101
+        runAsUser: 0
       containers:
         - name: frontend
-          image: gunjkushwaha/eventportal-frontend:v1
+          image: gunjkushwaha/eventportal-frontend:v4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           env:
             - name: APP_VERSION
-              value: "v1"
+              value: "v4"
           readinessProbe:
             httpGet: { path: /healthz, port: 80 }
             initialDelaySeconds: 3
@@ -44,6 +49,14 @@ spec:
           resources:
             requests: { cpu: "50m", memory: "32Mi" }
             limits:   { cpu: "200m", memory: "128Mi" }
+          securityContext:
+            allowPrivilegeEscalation: false
+            # Keep CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID so the nginx master
+            # process (running as root) can chown to the unprivileged `nginx` user
+            # and write to /run/nginx.pid. drop: ["ALL"] would break the pidfile.
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETUID", "SETGID"]
 ---
 apiVersion: v1
 kind: Service

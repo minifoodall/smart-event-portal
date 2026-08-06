@@ -16,6 +16,13 @@ FROM nginx:1.27-alpine
 RUN addgroup -S appgroup 2>/dev/null || true
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Pre-create nginx runtime dirs so the unprivileged `nginx` user (uid 100) can write to them
+# when the pod has a read-only root filesystem / non-root securityContext.
+RUN mkdir -p /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp /var/cache/nginx/fastcgi_temp \
+              /var/cache/nginx/uwsgi_temp /var/cache/nginx/scgi_temp /run/nginx \
+    && touch /run/nginx.pid \
+    && chown -R nginx:nginx /var/cache/nginx /run/nginx \
+    && chown nginx:nginx /run/nginx.pid
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost/healthz || exit 1
