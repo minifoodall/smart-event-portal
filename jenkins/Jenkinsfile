@@ -126,12 +126,15 @@ pipeline {
             # unreliable because of how kubectl interleaves its 'pod deleted' event
             # with the pod's stdout — capturing the bare http_code never worked.
             #
-            # NOTE: do NOT use `wait $PF_PID` — `wait` blocks the parent shell's exit
-            # on the background process, which Jenkins sh then kills with SIGTERM
-            # (exit 143). Use `disown` so the shell can exit independently.
+            # IMPORTANT: do NOT use `wait $PF_PID` or `disown` —
+            #   - `wait` blocks the parent shell's exit on the bg process, which
+            #     Jenkins sh times out and SIGTERMs (exit 143, FAILURE).
+            #   - `disown` is bash-only; Jenkins sh uses dash on Debian and aborts
+            #     with exit 127 (command not found).
+            # Just `kill -9` the bg process and `exit` — Jenkins cleans up the
+            # process group when the sh step ends.
             kubectl -n ${K8S_NAMESPACE} port-forward svc/backend 18080:80 >/tmp/pf.log 2>&1 &
             PF_PID=$!
-            disown $PF_PID
             # Wait for port-forward to be ready (it returns once the tunnel is up).
             for pf_wait in 1 2 3 4 5 6 7 8 9 10; do
               if curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:18080/api/health; then
