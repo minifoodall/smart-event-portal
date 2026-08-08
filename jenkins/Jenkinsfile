@@ -119,7 +119,15 @@ pipeline {
         sh '''
           sleep 10
           for i in 1 2 3 4 5; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://${K8S_NAMESPACE}.svc.cluster.local:80/api/health || echo 000)
+            # Run curl from inside the cluster so service DNS (backend:80) resolves.
+            # ${K8S_NAMESPACE}.svc.cluster.local does NOT resolve from the jenkins container
+            # and is not a valid service name in this namespace anyway.
+            code=$(kubectl run curl-verify-${BUILD_NUMBER}-${i} \
+              --rm -i --restart=Never \
+              --image=curlimages/curl:8.10.1 \
+              --namespace=${K8S_NAMESPACE} \
+              --quiet \
+              -- curl -s -o /dev/null -w "%{http_code}" http://backend:80/api/health 2>/dev/null || echo 000)
             [ "$code" = "200" ] && { echo "Health OK"; exit 0; }
             echo "Try $i: $code"; sleep 5
           done
