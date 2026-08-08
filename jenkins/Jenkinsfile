@@ -125,8 +125,13 @@ pipeline {
             # Previous attempts (curl directly, kubectl run --rm ephemeral pods) were
             # unreliable because of how kubectl interleaves its 'pod deleted' event
             # with the pod's stdout — capturing the bare http_code never worked.
-            kubectl -n ${K8S_NAMESPACE} port-forward svc/backend 18080:80 &
+            #
+            # NOTE: do NOT use `wait $PF_PID` — `wait` blocks the parent shell's exit
+            # on the background process, which Jenkins sh then kills with SIGTERM
+            # (exit 143). Use `disown` so the shell can exit independently.
+            kubectl -n ${K8S_NAMESPACE} port-forward svc/backend 18080:80 >/tmp/pf.log 2>&1 &
             PF_PID=$!
+            disown $PF_PID
             # Wait for port-forward to be ready (it returns once the tunnel is up).
             for pf_wait in 1 2 3 4 5 6 7 8 9 10; do
               if curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:18080/api/health; then
@@ -136,10 +141,14 @@ pipeline {
             done
             for i in 1 2 3 4 5; do
               code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:18080/api/health || echo 000)
-              [ "$code" = "200" ] && { echo "Health OK"; kill $PF_PID 2>/dev/null; wait $PF_PID 2>/dev/null; exit 0; }
+              if [ "$code" = "200" ]; then
+                echo "Health OK"
+                kill -9 $PF_PID 2>/dev/null || true
+                exit 0
+              fi
               echo "Try $i: $code"; sleep 5
             done
-            kill $PF_PID 2>/dev/null; wait $PF_PID 2>/dev/null
+            kill -9 $PF_PID 2>/dev/null || true
             echo "Health endpoint never returned 200"; exit 1
           '''
         }
