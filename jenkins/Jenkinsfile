@@ -119,24 +119,27 @@ pipeline {
         withKubeConfig([credentialsId: 'kubeconfig-creds']) {
           sh '''
             sleep 10
+            # kubectl port-forward gives the jenkins container a localhost tunnel to
+            # the cluster-internal backend service. The backend ClusterIP is only
+            # reachable from inside the cluster, so we tunnel through the API server.
+            # Previous attempts (curl directly, kubectl run --rm ephemeral pods) were
+            # unreliable because of how kubectl interleaves its 'pod deleted' event
+            # with the pod's stdout — capturing the bare http_code never worked.
+            kubectl -n ${K8S_NAMESPACE} port-forward svc/backend 18080:80 &
+            PF_PID=$!
+            # Wait for port-forward to be ready (it returns once the tunnel is up).
+            for pf_wait in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:18080/api/health; then
+                break
+              fi
+              sleep 1
+            done
             for i in 1 2 3 4 5; do
-              # Run curl from inside the cluster so service DNS (backend:80) resolves.
-              # We previously tried curling ${K8S_NAMESPACE}.svc.cluster.local:80/api/health
-              # directly from the jenkins container, but that DNS only resolves from
-              # inside the cluster, AND no service named "${K8S_NAMESPACE}" exists in
-              # the namespace anyway — services are backend, frontend, mongo. So we
-              # spin up an ephemeral curlimages/curl pod with `kubectl run --rm`. The
-              # pod's stdout streams back through kubectl to our shell, capturing the
-              # HTTP status code. Note: this stage MUST be wrapped in withKubeConfig —
-              # without it kubectl can't reach the API server.
-              code=$(kubectl run curl-verify-${BUILD_NUMBER}-${i} \
-                --rm -i --restart=Never \
-                --image=curlimages/curl:8.10.1 \
-                --namespace=${K8S_NAMESPACE} \
-                -- curl -s -o /dev/null -w "%{http_code}" http://backend:80/api/health 2>&1 | awk '/^[0-9][0-9][0-9]$/ {print; exit}')
-              [ "$code" = "200" ] && { echo "Health OK"; exit 0; }
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:18080/api/health || echo 000)
+              [ "$code" = "200" ] && { echo "Health OK"; kill $PF_PID 2>/dev/null; wait $PF_PID 2>/dev/null; exit 0; }
               echo "Try $i: $code"; sleep 5
             done
+            kill $PF_PID 2>/dev/null; wait $PF_PID 2>/dev/null
             echo "Health endpoint never returned 200"; exit 1
           '''
         }
