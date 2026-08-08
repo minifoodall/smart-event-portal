@@ -116,23 +116,30 @@ pipeline {
 
     stage('Verify Deployment') {
       steps {
-        sh '''
-          sleep 10
-          for i in 1 2 3 4 5; do
-            # Run curl from inside the cluster so service DNS (backend:80) resolves.
-            # ${K8S_NAMESPACE}.svc.cluster.local does NOT resolve from the jenkins container
-            # and is not a valid service name in this namespace anyway.
-            code=$(kubectl run curl-verify-${BUILD_NUMBER}-${i} \
-              --rm -i --restart=Never \
-              --image=curlimages/curl:8.10.1 \
-              --namespace=${K8S_NAMESPACE} \
-              --quiet \
-              -- curl -s -o /dev/null -w "%{http_code}" http://backend:80/api/health 2>/dev/null || echo 000)
-            [ "$code" = "200" ] && { echo "Health OK"; exit 0; }
-            echo "Try $i: $code"; sleep 5
-          done
-          echo "Health endpoint never returned 200"; exit 1
-        '''
+        withKubeConfig([credentialsId: 'kubeconfig-creds']) {
+          sh '''
+            sleep 10
+            for i in 1 2 3 4 5; do
+              # Run curl from inside the cluster so service DNS (backend:80) resolves.
+              # We previously tried curling ${K8S_NAMESPACE}.svc.cluster.local:80/api/health
+              # directly from the jenkins container, but that DNS only resolves from
+              # inside the cluster, AND no service named "${K8S_NAMESPACE}" exists in
+              # the namespace anyway — services are backend, frontend, mongo. So we
+              # spin up an ephemeral curlimages/curl pod with `kubectl run --rm`. The
+              # pod's stdout streams back through kubectl to our shell, capturing the
+              # HTTP status code. Note: this stage MUST be wrapped in withKubeConfig —
+              # without it kubectl can't reach the API server.
+              code=$(kubectl run curl-verify-${BUILD_NUMBER}-${i} \
+                --rm -i --restart=Never \
+                --image=curlimages/curl:8.10.1 \
+                --namespace=${K8S_NAMESPACE} \
+                -- curl -s -o /dev/null -w "%{http_code}" http://backend:80/api/health 2>&1 | tail -1)
+              [ "$code" = "200" ] && { echo "Health OK"; exit 0; }
+              echo "Try $i: $code"; sleep 5
+            done
+            echo "Health endpoint never returned 200"; exit 1
+          '''
+        }
       }
     }
   }
