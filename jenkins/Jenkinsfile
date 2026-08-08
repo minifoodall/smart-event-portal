@@ -132,8 +132,14 @@ pipeline {
   post {
     success {
       echo "✅ Deployment ${APP_VERSION} succeeded"
-      withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
-        sh "curl -fsS -X POST -H 'Content-Type: application/json' --data '{\"text\":\"✅ Smart Event Portal ${APP_VERSION} deployed to ${DEPLOY_ENV} by ${BUILD_USER}\"}' $SLACK_URL || true"
+      script {
+        try {
+          withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+            sh "curl -fsS -X POST -H 'Content-Type: application/json' --data '{\"text\":\"✅ Smart Event Portal ${APP_VERSION} deployed to ${DEPLOY_ENV} by ${BUILD_USER}\"}' $SLACK_URL || true"
+          }
+        } catch (e) {
+          echo "⚠️ slack-webhook not configured, skipping notification: ${e.message}"
+        }
       }
     }
     failure {
@@ -146,8 +152,14 @@ pipeline {
           kubectl -n ${K8S_NAMESPACE} rollout status deployment/frontend --timeout=3m
         '''
       }
-      withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
-        sh "curl -fsS -X POST -H 'Content-Type: application/json' --data '{\"text\":\"❌ Build #${BUILD_NUMBER} failed — rolled back ${APP_VERSION}\"}' $SLACK_URL || true"
+      script {
+        try {
+          withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+            sh "curl -fsS -X POST -H 'Content-Type: application/json' --data '{\"text\":\"❌ Build #${BUILD_NUMBER} failed — rolled back ${APP_VERSION}\"}' $SLACK_URL || true"
+          }
+        } catch (e) {
+          echo "⚠️ slack-webhook not configured, skipping notification: ${e.message}"
+        }
       }
     }
     always {
